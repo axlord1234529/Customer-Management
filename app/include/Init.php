@@ -5,4 +5,6 @@ $GLOBALS['config'] = array(
         'username' => 'root',
         'password' => '',
         'db' => 'test'
-    ));
+    ),
+    'roots' => array(
+        'log directory' => $_SERVER['DOCUMENT_ROOT'].'/test/app/logs/'));

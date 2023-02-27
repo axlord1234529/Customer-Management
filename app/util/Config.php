@@ -1,6 +1,6 @@
 <?php
 
-namespace App\config;
+namespace App\util;
 
 Class Config{
     public static function get($path = null){
