@@ -2,7 +2,9 @@
 
 namespace App\database;
 
+use App\util\Config;
 use App\util\Log;
+use PDO;
 
 class Db
 {
@@ -28,7 +30,8 @@ class Db
         }
         return self::$_instance;
     }
-    public function query($sql,$params = array()){
+    public function query($sql,$params = array())
+    {
         try {
             if($_query = $this->_pdo->prepare($sql)){
                 if(count($params)){
@@ -39,21 +42,21 @@ class Db
                         $position++;
                     }
                 }
-                if($_query->execute()){
+                if($_query->execute())
+                    Log::write('mysql',$sql);
                     $tmp = explode(" ",$sql);
                     if($tmp[0]==='SELECT')
                     {
-                        return $_query->fetchAll(PDO::FETCH_OBJ);
+                        return $_query->fetchAll(PDO::FETCH_ASSOC);
                     }
                     return $_query->rowCount();
 
                 }
             }
-        }
-        catch (\PDOException $e)
-        {
-            Log::write('error', $e->getMessage());
-        }
+            catch (\PDOException $e)
+            {
+                Log::write('error', $e->getMessage());
+            }
         return false;
     }
 
@@ -66,17 +69,13 @@ class Db
 
             if(in_array($operator,$operators)){
                 $sql = "{$action} FROM {$table} WHERE {$field} {$operator} ?";
-                if($this->query($sql,array($value))){
-                    return $this;
-                }
+                return $this->query($sql,array($value));
             }
         }
         else
         {
             $sql = "{$action} FROM {$table}";
-            if($this->query($sql)){
-                return $this;
-            }
+            return $this->query($sql);
         }
     }
     public function get($table,$where = array()) {
@@ -111,14 +110,14 @@ class Db
     }
 
     public function update($table_name,$fields = array(),$where = array()){
-        $set = '';
+        $columns = '';
         $x = 1;
         foreach($fields as $name => $value)
         {
-            $set .= "{$name} = ?";
+            $columns .= "{$name} = ?";
             if($x < count($fields))
             {
-                $set .= ",";
+                $columns .= ",";
             }
             $x++;
         }
@@ -130,18 +129,22 @@ class Db
             $value    = $where[2];
             if(in_array($operator,$operators))
             {
-                $sql = "UPDATE {$table_name} SET {$set} WHERE {$field} {$operator} ?";
+                $sql = "UPDATE {$table_name} SET {$columns} WHERE {$field} {$operator} ?";
                 $fields['where_value'] = $value;
             }
         }else
         {
-            $sql = "UPDATE {$table_name} SET {$set}";
+            $sql = "UPDATE {$table_name} SET {$columns}";
         }
         if($this->query($sql,$fields))
         {
             return true;
         }
         return false;
+    }
+
+    public function lastInsertId() {
+        return $this->_pdo->lastInsertId();
     }
 
 

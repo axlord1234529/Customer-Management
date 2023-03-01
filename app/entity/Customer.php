@@ -3,6 +3,7 @@
 namespace App\entity;
 
 class Customer {
+    private $id = 0;
     private $name;
     private $address;
     private $password;
@@ -10,13 +11,21 @@ class Customer {
     private $billingAddresses = array();
     private $shippingAddresses = array();
 
-    public function __construct($name, $address, $password, $email) {
+    public function __construct($id,$name, $address, $password, $email) {
+        $this->id = $id;
         $this->name = $name;
         $this->address = $address;
         $this->password = $password;
         $this->email = $email;
     }
 
+    public function getId(){
+        return $this->id;
+    }
+
+    public function setId($id){
+        $this->id = $id;
+    }
     public function getName() {
         return $this->name;
     }
@@ -53,27 +62,64 @@ class Customer {
         return $this->billingAddresses;
     }
 
-    public function addBillingAddress($address, $taxNumber = null) {
+    public function setBillingAddresses($billingAddresses)
+    {
+        $this->billingAddresses = $billingAddresses;
+    }
+
+    public function addBillingAddress($id,$address, $taxNumber = null, $default = false) {
         $this->billingAddresses[] = array(
+            'id' => $id,
+            'customer_id' => $this->id,
             'address' => $address,
-            'taxNumber' => $taxNumber
+            'tax_number' => $taxNumber,
+            'is_default' => $default
         );
+    }
+    public function deleteBillingAddress($addressId) {
+        foreach ($this->billingAddresses as $key => $billingAddress) {
+            if ($billingAddress['id'] == $addressId) {
+                unset($this->billingAddresses[$key]);
+            }
+        }
+    }
+    public function getDefaultBillingAddress() {
+        foreach ($this->billingAddresses as $billingAddress) {
+            if ($billingAddress['is_default']) {
+                return $billingAddress['address'];
+            }
+        }
+        return null;
     }
 
     public function getShippingAddresses() {
         return $this->shippingAddresses;
     }
 
-    public function addShippingAddress($address, $default = false) {
+    public function setShippingAddresses($shippingAddresses){
+         $this->shippingAddresses = $shippingAddresses;
+    }
+
+    public function addShippingAddress($id,$address, $default = false) {
         $this->shippingAddresses[] = array(
+            'id' => $id,
+            'customer_id' => $this->id,
             'address' => $address,
-            'default' => $default
+            'is_default' => $default
         );
+    }
+
+    public function deleteShippingAddress($addressId) {
+        foreach ($this->shippingAddresses as $key => $shippingAddress) {
+            if ($shippingAddress['id'] == $addressId) {
+                unset($this->shippingAddresses[$key]);
+            }
+        }
     }
 
     public function getDefaultShippingAddress() {
         foreach ($this->shippingAddresses as $shippingAddress) {
-            if ($shippingAddress['default']) {
+            if ($shippingAddress['is_default']) {
                 return $shippingAddress['address'];
             }
         }

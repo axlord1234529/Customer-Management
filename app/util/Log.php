@@ -9,7 +9,7 @@ class Log
     public static function write($type, $message)
     {
         $date = new \DateTime();
-        $logDir = Config::get('roots/log directory');
+        $logDir = LOG_DIRECTORY;
         $log = $logDir.$date->format('Y-m-d').".txt";
 
         if(is_dir($logDir))
